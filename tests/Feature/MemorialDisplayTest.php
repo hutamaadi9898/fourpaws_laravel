@@ -69,7 +69,15 @@ test('memorial view count increments on visit', function () {
 
 test('memorial displays guestbook entries', function () {
     $user = User::factory()->create();
-    $template = MemorialTemplate::factory()->create();
+    $template = MemorialTemplate::factory()->create([
+        'template_data' => [
+            'theme_color' => '#1e40af',
+            'layout' => 'classic',
+            'settings' => [
+                'show_guestbook' => true,
+            ],
+        ],
+    ]);
 
     $memorial = MemorialPage::factory()->create([
         'user_id' => $user->id,
@@ -81,6 +89,7 @@ test('memorial displays guestbook entries', function () {
         'memorial_page_id' => $memorial->id,
         'visitor_name' => 'Sarah Johnson',
         'message' => 'Buddy was such a sweet dog. I will miss him dearly.',
+        'is_approved' => true,
     ]);
 
     $response = $this->get("/memorial/{$memorial->slug}");

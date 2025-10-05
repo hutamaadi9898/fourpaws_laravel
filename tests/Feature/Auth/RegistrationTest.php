@@ -2,8 +2,6 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
-
 it('renders the registration screen', function () {
     $response = $this->get(route('register'));
 

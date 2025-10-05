@@ -26,7 +26,7 @@ it('verifies email addresses', function () {
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
-    $this->actingAs($user)->get($verificationUrl)->assertRedirect(route('dashboard', absolute: false) . '?verified=1');
+    $this->actingAs($user)->get($verificationUrl)->assertRedirect(route('dashboard', absolute: false).'?verified=1');
 
     Event::assertDispatched(Verified::class);
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();

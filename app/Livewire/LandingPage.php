@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\MemorialPage;
+use App\Models\MemorialTemplate;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -34,24 +35,31 @@ class LandingPage extends Component
                 ->take(6)
                 ->get();
 
+            $templates = MemorialTemplate::active()
+                ->ordered()
+                ->take(6)
+                ->get();
+
             // Calculate basic stats
             $stats = [
                 'memorials' => MemorialPage::where('is_published', true)->count(),
-                'templates' => 12, // Static number for templates
+                'templates' => MemorialTemplate::active()->count(),
                 'users' => User::count(),
             ];
 
-            return view('livewire.pages.landing-clean', [
+            return view('livewire.pages.landing', [
                 'featuredMemorials' => $featuredMemorials,
+                'templates' => $templates,
                 'stats' => $stats,
             ]);
         } catch (\Exception $e) {
             // Fallback with empty collections if there's an error
-            return view('livewire.pages.landing-clean', [
+            return view('livewire.pages.landing', [
                 'featuredMemorials' => collect(),
+                'templates' => collect(),
                 'stats' => [
                     'memorials' => 0,
-                    'templates' => 12,
+                    'templates' => 0,
                     'users' => 0,
                 ],
             ]);

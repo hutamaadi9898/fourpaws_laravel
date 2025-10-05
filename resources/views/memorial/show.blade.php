@@ -152,9 +152,13 @@
                 <div>
                     <h2 class="text-3xl font-bold text-slate-900 mb-8">Condolences</h2>
 
-                    @if($memorial->guestbookEntries->count() > 0)
+                    @php
+                    $approvedEntries = $memorial->guestbookEntries->where('is_approved', true);
+                    @endphp
+
+                    @if($approvedEntries->count() > 0)
                     <div class="space-y-6">
-                        @foreach($memorial->guestbookEntries as $entry)
+                        @foreach($approvedEntries as $entry)
                         <div class="bg-slate-50 rounded-xl p-6">
                             <p class="text-slate-700 mb-4">{!! nl2br(e($entry->message)) !!}</p>
                             <div class="flex items-center justify-between text-sm text-slate-500">

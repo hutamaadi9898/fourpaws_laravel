@@ -8,13 +8,13 @@ A Laravel-based pet memorial website generator that allows users to create beaut
 
 -   **Backend**: Laravel 12.32.5, PHP 8.4.11
 -   **Database**: PostgreSQL 17
--   **Frontend**: Livewire 3.6.4, Volt 1.7.2, Alpine.js
+-   **Frontend**: Livewire 3.6.4 (Standard Components), Alpine.js
 -   **UI Components**: Filament 4.1.1 (Admin Panel), Flux UI 2.5.0, Tailwind CSS 4.1.11
 -   **Authentication**: Laravel Breeze (User Auth) + Filament Admin Panel
 -   **Testing**: Pest 4.1.1 with Browser Testing
 -   **Code Quality**: Laravel Pint 1.25.1
 -   **SEO**: Modern semantic HTML, meta tags, structured data, sitemap generation
--   **Design**: Inter font family, dark-optimized color palette (slate/zinc), modern UI patterns
+-   **Design**: Inter font family, custom Four Paws logo SVG, Unsplash/Pexels stock images, dark-optimized color palette (slate/zinc), modern UI patterns
 
 ---
 
@@ -144,11 +144,12 @@ A Laravel-based pet memorial website generator that allows users to create beaut
     -   [✅] Configure tab-based navigation (Promote/Gallery)
     -   [✅] Add SEO-friendly URLs and meta tags
 
--   [✅] **Livewire Volt Components**
-    -   [✅] Create main landing page Volt component
-    -   [✅] Implement tab switching functionality using Alpine.js
-    -   [✅] Add smooth transitions and animations
+-   [✅] **Standard Livewire Components**
+    -   [✅] Create main landing page Livewire component (LandingPage)
+    -   [✅] Implement tab switching functionality using Alpine.js (3 tabs: Create Memorial, Templates, Featured Memorials)
+    -   [✅] Add smooth transitions and animations with stock images from Unsplash
     -   [✅] Ensure mobile responsiveness with Tailwind CSS
+    -   [✅] Custom Four Paws logo SVG integrated across all pages
 
 ### 2.2 Hero Section & Product Promotion Tab
 
@@ -235,9 +236,9 @@ A Laravel-based pet memorial website generator that allows users to create beaut
 
 ### 3.2 Memorial Page Builder Interface
 
--   [ ] **User-Facing Builder (Livewire Volt)**
+-   [ ] **User-Facing Builder (Standard Livewire)**
 
-    -   [ ] Create intuitive memorial builder with step-by-step wizard
+    -   [ ] Create intuitive memorial builder with step-by-step wizard using standard Livewire components
     -   [ ] Build real-time preview functionality using Alpine.js
     -   [ ] Implement drag-and-drop components with modern interactions
     -   [ ] Add template selection with live preview
@@ -455,11 +456,11 @@ A Laravel-based pet memorial website generator that allows users to create beaut
     -   [ ] Mobile responsiveness testing
     -   [ ] Cross-browser compatibility
 
-### 7.2 Livewire/Volt Component Testing
+### 7.2 Standard Livewire Component Testing
 
 -   [ ] **Component Tests**
 
-    -   [ ] Landing page tab switching
+    -   [ ] Landing page tab switching (Create Memorial, Templates, Featured Memorials)
     -   [ ] Memorial builder interactions
     -   [ ] Form validation and submission
     -   [ ] Real-time updates and reactivity
@@ -628,68 +629,70 @@ CREATE TABLE guestbook_entries (
 );
 ```
 
-### Key Livewire Volt Components
+### Key Standard Livewire Components
 
 ```php
-// resources/views/livewire/landing-page.blade.php
+// app/Livewire/LandingPage.php
 <?php
-use function Livewire\Volt\{state, computed};
 
-state(['activeTab' => 'promote']);
+namespace App\Livewire;
 
-$switchTab = fn($tab) => $this->activeTab = $tab;
+use App\Models\MemorialPage;
+use App\Models\MemorialTemplate;
+use App\Models\User;
+use Livewire\Component;
 
-$featuredMemorials = computed(fn() =>
-    App\Models\MemorialPage::published()
-        ->with(['media', 'user'])
-        ->latest()
-        ->limit(12)
-        ->get()
-);
-?>
+class LandingPage extends Component
+{
+    public string $activeTab = 'promote';
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <!-- Navigation Tabs -->
-    <nav class="border-b border-gray-200 dark:border-gray-700">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex space-x-8">
-                <button
-                    wire:click="switchTab('promote')"
-                    @class([
-                        'py-4 px-1 border-b-2 font-medium text-sm',
-                        'border-blue-500 text-blue-600' => $activeTab === 'promote',
-                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' => $activeTab !== 'promote'
-                    ])
-                >
-                    Create Memorial
-                </button>
-                <button
-                    wire:click="switchTab('gallery')"
-                    @class([
-                        'py-4 px-1 border-b-2 font-medium text-sm',
-                        'border-blue-500 text-blue-600' => $activeTab === 'gallery',
-                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' => $activeTab !== 'gallery'
-                    ])
-                >
-                    Memorial Gallery
-                </button>
-            </div>
-        </div>
-    </nav>
+    public function switchTab(string $tab): void
+    {
+        $this->activeTab = $tab;
+    }
 
-    <!-- Tab Content -->
-    <div x-data="{ activeTab: @entangle('activeTab') }">
-        <!-- Promote Tab -->
-        <div x-show="activeTab === 'promote'" x-transition:enter="transition ease-out duration-300">
-            @include('livewire.partials.promote-tab')
-        </div>
+    public function render()
+    {
+        try {
+            $featuredMemorials = MemorialPage::published()
+                ->with(['user', 'media' => fn($query) => $query->limit(1)])
+                ->latest()
+                ->limit(6)
+                ->get();
 
-        <!-- Gallery Tab -->
-        <div x-show="activeTab === 'gallery'" x-transition:enter="transition ease-out duration-300">
-            @include('livewire.partials.gallery-tab')
-        </div>
-    </div>
-</div>
+            $templates = MemorialTemplate::active()
+                ->ordered()
+                ->limit(5)
+                ->get();
+
+            $stats = [
+                'memorials' => MemorialPage::published()->count(),
+                'templates' => MemorialTemplate::active()->count(),
+                'users' => User::count(),
+            ];
+        } catch (\Exception $e) {
+            // Fallback data if database queries fail
+            $featuredMemorials = collect([]);
+            $templates = collect([]);
+            $stats = [
+                'memorials' => 0,
+                'templates' => 0,
+                'users' => 0,
+            ];
+        }
+
+        return view('livewire.landing-page', [
+            'featuredMemorials' => $featuredMemorials,
+            'templates' => $templates,
+            'stats' => $stats,
+        ])->layout('layouts.none');
+    }
+}
+```
+
+```php
+// routes/web.php - Updated routing without Volt
+Route::get('/', \App\Livewire\LandingPage::class)->name('home');
 ```
 
 ### Filament Resource Example

@@ -1,56 +1,3 @@
-<?php
-
-use App\Models\MemorialPage;
-use App\Models\MemorialTemplate;
-use Livewire\Volt\Component;
-
-new class extends Component {
-    public string $activeTab = 'promote';
-
-    public function switchTab(string $tab): void
-    {
-        $this->activeTab = $tab;
-    }
-    
-    public function layout(): string
-    {
-        return 'layouts.none';
-    }
-
-    public function with(): array
-    {
-        try {
-            return [
-                'featuredMemorials' => MemorialPage::published()
-                    ->with(['user', 'media' => fn($query) => $query->limit(1)])
-                    ->latest()
-                    ->limit(6)
-                    ->get(),
-                'templates' => MemorialTemplate::active()
-                    ->ordered()
-                    ->limit(5)
-                    ->get(),
-                'stats' => [
-                    'memorials' => MemorialPage::published()->count(),
-                    'templates' => MemorialTemplate::active()->count(),
-                    'users' => \App\Models\User::count(),
-                ],
-            ];
-        } catch (\Exception $e) {
-            // Fallback data if database queries fail
-            return [
-                'featuredMemorials' => collect([]),
-                'templates' => collect([]),
-                'stats' => [
-                    'memorials' => 0,
-                    'templates' => 0,
-                    'users' => 0,
-                ],
-            ];
-        }
-    }
-}; ?>
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 
@@ -101,11 +48,28 @@ new class extends Component {
                 <div class="flex items-center justify-between h-16">
                     {{-- Logo --}}
                     <div class="flex items-center space-x-2">
-                        <div
-                            class="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                            <svg class="w-8 h-8" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#3B82F6" />
+                                        <stop offset="100%" style="stop-color:#8B5CF6" />
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="32" cy="32" r="30" fill="url(#gradient1)" stroke="#FFFFFF"
+                                    stroke-width="2" />
                                 <path
-                                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                                    d="M20 28c0-6.627 5.373-12 12-12s12 5.373 12 12c0 4.418-2.389 8.291-5.943 10.376L32 44l-6.057-5.624C22.389 36.291 20 32.418 20 28z"
+                                    fill="#FFFFFF" />
+                                <circle cx="28" cy="26" r="2" fill="url(#gradient1)" />
+                                <circle cx="36" cy="26" r="2" fill="url(#gradient1)" />
+                                <path d="M26 32c0 3.314 2.686 6 6 6s6-2.686 6-6" stroke="url(#gradient1)"
+                                    stroke-width="2" stroke-linecap="round" />
+                                <ellipse cx="24" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                                <ellipse cx="40" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                                <path d="M18 20c-2 2-2 6 0 8" stroke="#FFFFFF" stroke-width="2"
+                                    stroke-linecap="round" />
+                                <path d="M46 20c2 2 2 6 0 8" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
                             </svg>
                         </div>
                         <span
@@ -133,7 +97,7 @@ new class extends Component {
                             $activeTab !== 'gallery'
                             ])
                             >
-                            Memorial Gallery
+                            Featured Memorials
                         </button>
                     </nav>
 
@@ -193,17 +157,17 @@ new class extends Component {
                         'text-slate-600 dark:text-slate-400' => $activeTab !== 'gallery'
                         ])
                         >
-                        Memorial Gallery
+                        Featured Memorials
                     </button>
                 </div>
             </div>
         </div>
 
         {{-- Tab Content --}}
-        <main x-data="{ activeTab: @entangle('activeTab') }">
+        <main>
             {{-- Promote Tab --}}
-            <div x-show="activeTab === 'promote'" x-transition:enter="transition ease-out duration-300 transform"
-                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            @if($activeTab === 'promote')
+            <div>
                 {{-- Hero Section --}}
                 <section class="relative py-20 lg:py-32">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -232,9 +196,9 @@ new class extends Component {
                                     Get Started Free
                                 </a>
                                 @endauth
-                                <button wire:click="switchTab('gallery')"
+                                <button wire:click="switchTab('templates')"
                                     class="border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-                                    View Examples
+                                    View Templates
                                 </button>
                             </div>
                         </div>
@@ -400,7 +364,7 @@ new class extends Component {
                         </div>
 
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            @foreach($templates as $template)
+                            @foreach($templates->take(3) as $template)
                             <div
                                 class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden group hover:shadow-md transition-shadow duration-200">
                                 <div class="aspect-video bg-gradient-to-br {{ 
@@ -412,12 +376,15 @@ new class extends Component {
                                         '#0891b2' => 'from-cyan-400 to-cyan-600',
                                         default => 'from-blue-400 to-blue-600'
                                     }
-                                }} relative">
-                                    <div class="absolute inset-0 bg-black/20"></div>
+                                }} relative overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=225&fit=crop&auto=format"
+                                        alt="Pet memorial template"
+                                        class="absolute inset-0 w-full h-full object-cover opacity-20">
+                                    <div class="absolute inset-0 bg-black/30"></div>
                                     <div class="absolute inset-0 flex items-center justify-center">
                                         <div class="text-white text-center">
                                             <div
-                                                class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
                                                 <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                                                     <path
                                                         d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
@@ -441,6 +408,13 @@ new class extends Component {
                                 </div>
                             </div>
                             @endforeach
+                        </div>
+
+                        <div class="text-center mt-12">
+                            <button wire:click="switchTab('templates')"
+                                class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                View All Templates
+                            </button>
                         </div>
                     </div>
                 </section>
@@ -468,134 +442,307 @@ new class extends Component {
                     </div>
                 </section>
             </div>
+            @endif
 
             {{-- Gallery Tab --}}
-            <div x-show="activeTab === 'gallery'" x-transition:enter="transition ease-out duration-300 transform"
-                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                <section class="py-16">
+            @if($activeTab === 'gallery')
+            <div>
+
+                {{-- Hero Section for Gallery --}}
+                <section class="relative py-20 lg:py-32">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div class="text-center mb-12">
-                            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-                                Featured Memorials
-                            </h2>
-                            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                                Explore beautiful memorial pages created by loving families to honor their cherished
-                                pets.
+                        <div class="text-center">
+                            <h1 class="text-4xl md:text-6xl font-bold text-slate-900 dark:text-slate-100 mb-6">
+                                Featured
+                                <span
+                                    class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pet
+                                    Memorials</span>
+                            </h1>
+                            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-8">
+                                Discover touching tributes created by pet parents who wanted to honor their beloved
+                                companions. Each memorial tells a unique story of love, joy, and cherished memories.
                             </p>
                         </div>
+                    </div>
 
-                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            @forelse($featuredMemorials as $memorial)
-                            <div
-                                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden group hover:shadow-md transition-all duration-200">
-                                @if($memorial->media->first())
-                                <div class="aspect-video bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                    <div class="absolute bottom-4 left-4 text-white">
-                                        <h3 class="text-lg font-semibold">{{ $memorial->pet_name }}</h3>
-                                        <p class="text-sm opacity-90">{{ $memorial->pet_type }}</p>
-                                    </div>
-                                </div>
-                                @else
-                                <div
-                                    class="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                                    <div class="text-center">
-                                        <div
-                                            class="w-16 h-16 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                                            <svg class="w-8 h-8 text-slate-500 dark:text-slate-400" fill="currentColor"
-                                                viewBox="0 0 20 20">
-                                                <path
-                                                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-                                            </svg>
-                                        </div>
-                                        <h3 class="font-semibold text-slate-700 dark:text-slate-300">{{
-                                            $memorial->pet_name }}</h3>
-                                        <p class="text-sm text-slate-500 dark:text-slate-400">{{ $memorial->pet_type }}
-                                        </p>
-                                    </div>
-                                </div>
-                                @endif
-
-                                <div class="p-6">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <span class="text-sm text-slate-500 dark:text-slate-400">
-                                            @if($memorial->birth_date && $memorial->death_date)
-                                            {{ $memorial->birth_date->format('Y') }} - {{
-                                            $memorial->death_date->format('Y') }}
-                                            @elseif($memorial->death_date)
-                                            Passed {{ $memorial->death_date->format('M Y') }}
-                                            @endif
-                                        </span>
-                                        <span class="text-xs text-slate-400 dark:text-slate-500">
-                                            {{ $memorial->view_count }} views
-                                        </span>
-                                    </div>
-
-                                    @if($memorial->description)
-                                    <p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-3">
-                                        {{ Str::limit($memorial->description, 100) }}
-                                    </p>
-                                    @endif
-
-                                    <div class="mt-4 flex items-center justify-between">
-                                        <span class="text-xs text-slate-500 dark:text-slate-400">
-                                            By {{ $memorial->user?->name ?? 'Unknown' }}
-                                        </span>
-                                        <button
-                                            class="text-blue-600 dark:text-blue-400 text-sm font-medium hover:text-blue-700 dark:hover:text-blue-300">
-                                            View Memorial →
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            @empty
-                            <div class="col-span-3 text-center py-12">
-                                <div
-                                    class="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg class="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">No memorials
-                                    yet</h3>
-                                <p class="text-slate-600 dark:text-slate-400 mb-6">Be the first to create a beautiful
-                                    memorial for your beloved pet.</p>
-                                <button wire:click="switchTab('promote')"
-                                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
-                                    Create First Memorial
-                                </button>
-                            </div>
-                            @endforelse
+                    {{-- Background decoration --}}
+                    <div class="absolute inset-0 -z-10 overflow-hidden">
+                        <div
+                            class="absolute -top-40 -right-32 w-80 h-80 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl">
+                        </div>
+                        <div
+                            class="absolute -bottom-40 -left-32 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl">
                         </div>
                     </div>
                 </section>
-            </div>
-        </main>
 
-        {{-- Footer --}}
-        <footer class="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <div
-                            class="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-                            </svg>
+                {{-- Featured Memorials Gallery --}}
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden group hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="aspect-video bg-gradient-to-br {{ 
+                                    match($template->template_data['theme_color'] ?? '#1e40af') {
+                                        '#1e40af' => 'from-blue-400 to-blue-600',
+                                        '#059669' => 'from-green-400 to-green-600',
+                                        '#ea580c' => 'from-orange-400 to-orange-600',
+                                        '#7c3aed' => 'from-purple-400 to-purple-600',
+                                        '#0891b2' => 'from-cyan-400 to-cyan-600',
+                                        default => 'from-blue-400 to-blue-600'
+                                    }
+                                }} relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=225&fit=crop&auto=format"
+                            alt="Pet memorial template" class="absolute inset-0 w-full h-full object-cover opacity-20">
+                        <div class="absolute inset-0 bg-black/30"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-white text-center">
+                                <div
+                                    class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                                    </svg>
+                                </div>
+                                <h3 class="font-semibold text-lg">{{ $template->name }}</h3>
+                            </div>
                         </div>
-                        <span
-                            class="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Four
-                            Paws</span>
                     </div>
-                    <div class="text-sm text-slate-500 dark:text-slate-400">
-                        © {{ date('Y') }} Four Paws. Made with ❤️ for pet families.
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">{{
+                            $template->name }}</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">{{ $template->description
+                            }}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-500 dark:text-slate-400 capitalize">
+                                {{ $template->template_data['layout'] ?? 'Classic' }} Style
+                            </span>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-4 h-4 rounded-full"
+                                    style="background-color: {{ $template->template_data['theme_color'] ?? '#1e40af' }}"></span>
+                                <button
+                                    class="text-blue-600 dark:text-blue-400 text-sm font-medium hover:text-blue-700 dark:hover:text-blue-300">
+                                    Preview →
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                @endforeach
             </div>
-        </footer>
+
+            <div class="text-center mt-12">
+                @auth
+                <a href="{{ route('dashboard') }}"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl inline-block">
+                    Start Creating Your Memorial
+                </a>
+                @else
+                <a href="{{ route('register') }}"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl inline-block">
+                    Get Started Free
+                </a>
+                @endauth
+            </div>
+    </div>
+    </section>
+    </div>
+
+
+
+    {{-- Hero Section for Gallery --}}
+    <section class="relative py-20 lg:py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-bold text-slate-900 dark:text-slate-100 mb-6">
+                    Featured
+                    <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pet
+                        Memorials</span>
+                </h1>
+                <p class="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    Explore beautiful memorial pages created by loving families to honor their cherished
+                    pets. Each memorial tells a unique story of love, joy, and cherished memories.
+                </p>
+            </div>
+        </div>
+
+        {{-- Background decoration --}}
+        <div class="absolute inset-0 -z-10 overflow-hidden">
+            <div
+                class="absolute -top-40 -right-32 w-80 h-80 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl">
+            </div>
+            <div
+                class="absolute -bottom-40 -left-32 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl">
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @forelse($featuredMemorials as $index => $memorial)
+                @php
+                $stockImages = [
+                'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=225&fit=crop&auto=format',
+                // Golden retriever
+                'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=225&fit=crop&auto=format',
+                // Cat
+                'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=225&fit=crop&auto=format',
+                // Dog
+                'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400&h=225&fit=crop&auto=format',
+                // Cat
+                'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=225&fit=crop&auto=format',
+                // Dog
+                'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=400&h=225&fit=crop&auto=format',
+                // Cat
+                ];
+                $imageUrl = $stockImages[$index % count($stockImages)];
+                @endphp
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden group hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="aspect-video bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+                        <img src="{{ $imageUrl }}" alt="{{ $memorial->pet_name }}"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent">
+                        </div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="text-lg font-semibold">{{ $memorial->pet_name }}</h3>
+                            <p class="text-sm opacity-90">{{ $memorial->pet_type }} {{ $memorial->breed ? '•
+                                ' . $memorial->breed : '' }}</p>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                                {{ $memorial->view_count }} views
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm text-slate-500 dark:text-slate-400">
+                                @if($memorial->birth_date && $memorial->death_date)
+                                {{ $memorial->birth_date->format('Y') }} - {{
+                                $memorial->death_date->format('Y') }}
+                                @elseif($memorial->death_date)
+                                Passed {{ $memorial->death_date->format('M Y') }}
+                                @endif
+                            </span>
+                            <div class="flex items-center space-x-1 text-yellow-500">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                    <path
+                                        d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                                </svg>
+                                <span class="text-xs text-slate-500">Featured</span>
+                            </div>
+                        </div>
+
+                        @if($memorial->description)
+                        <p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 mb-4">
+                            {{ Str::limit($memorial->description, 120) }}
+                        </p>
+                        @endif
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div
+                                    class="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs font-medium">
+                                        {{ substr($memorial->user?->name ?? 'U', 0, 1) }}
+                                    </span>
+                                </div>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">
+                                    By {{ $memorial->user?->name ?? 'Unknown' }}
+                                </span>
+                            </div>
+                            <a href="{{ route('memorial.show', $memorial) }}"
+                                class="text-blue-600 dark:text-blue-400 text-sm font-medium hover:text-blue-700 dark:hover:text-blue-300 flex items-center space-x-1 group">
+                                <span>View Memorial</span>
+                                <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="col-span-3 text-center py-12">
+                    <div
+                        class="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">No memorials
+                        yet</h3>
+                    <p class="text-slate-600 dark:text-slate-400 mb-6">Be the first to create a beautiful
+                        memorial for your beloved pet.</p>
+                    <button wire:click="switchTab('promote')"
+                        class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
+                        Create First Memorial
+                    </button>
+                </div>
+                @endforelse
+            </div>
+
+            <div class="text-center mt-16">
+                @auth
+                <a href="{{ route('dashboard') }}"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl inline-block">
+                    Create Your Own Memorial
+                </a>
+                @else
+                <a href="{{ route('register') }}"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl inline-block">
+                    Get Started Free
+                </a>
+                @endauth
+            </div>
+        </div>
+    </section>
+    </div>
+    </main>
+
+    {{-- Footer --}}
+    <footer class="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                        <svg class="w-8 h-8" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3B82F6" />
+                                    <stop offset="100%" style="stop-color:#8B5CF6" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="32" cy="32" r="30" fill="url(#gradient2)" stroke="#FFFFFF" stroke-width="2" />
+                            <path
+                                d="M20 28c0-6.627 5.373-12 12-12s12 5.373 12 12c0 4.418-2.389 8.291-5.943 10.376L32 44l-6.057-5.624C22.389 36.291 20 32.418 20 28z"
+                                fill="#FFFFFF" />
+                            <circle cx="28" cy="26" r="2" fill="url(#gradient2)" />
+                            <circle cx="36" cy="26" r="2" fill="url(#gradient2)" />
+                            <path d="M26 32c0 3.314 2.686 6 6 6s6-2.686 6-6" stroke="url(#gradient2)" stroke-width="2"
+                                stroke-linecap="round" />
+                            <ellipse cx="24" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                            <ellipse cx="40" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                            <path d="M18 20c-2 2-2 6 0 8" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                            <path d="M46 20c2 2 2 6 0 8" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Four
+                        Paws</span>
+                </div>
+                <div class="text-sm text-slate-500 dark:text-slate-400">
+                    © {{ date('Y') }} Four Paws. Made with ❤️ for pet families.
+                </div>
+            </div>
+        </div>
+    </footer>
+    </div>
+    @endif
+    </main>
     </div>
 
     @livewireScripts

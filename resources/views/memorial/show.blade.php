@@ -45,8 +45,13 @@
         <header class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
-                    <a href="{{ route('home') }}" class="text-slate-600 hover:text-slate-900 font-medium">
-                        ← Back to Four Paws
+                    <a href="{{ route('home') }}"
+                        class="flex items-center space-x-2 text-slate-600 hover:text-slate-900 font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span>Back to Four Paws</span>
                     </a>
                     <div class="text-sm text-slate-500">
                         Memorial created by {{ $memorial->user->name }}
@@ -176,11 +181,27 @@
                     This memorial was created with love using Four Paws
                 </p>
                 <div class="flex items-center justify-center space-x-2">
-                    <div
-                        class="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <div class="w-6 h-6 rounded flex items-center justify-center">
+                        <svg class="w-6 h-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="memorialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3B82F6" />
+                                    <stop offset="100%" style="stop-color:#8B5CF6" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="32" cy="32" r="30" fill="url(#memorialGradient)" stroke="#FFFFFF"
+                                stroke-width="2" />
                             <path
-                                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                                d="M20 28c0-6.627 5.373-12 12-12s12 5.373 12 12c0 4.418-2.389 8.291-5.943 10.376L32 44l-6.057-5.624C22.389 36.291 20 32.418 20 28z"
+                                fill="#FFFFFF" />
+                            <circle cx="28" cy="26" r="2" fill="url(#memorialGradient)" />
+                            <circle cx="36" cy="26" r="2" fill="url(#memorialGradient)" />
+                            <path d="M26 32c0 3.314 2.686 6 6 6s6-2.686 6-6" stroke="url(#memorialGradient)"
+                                stroke-width="2" stroke-linecap="round" />
+                            <ellipse cx="24" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                            <ellipse cx="40" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                            <path d="M18 20c-2 2-2 6 0 8" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                            <path d="M46 20c2 2 2 6 0 8" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
                         </svg>
                     </div>
                     <a href="{{ route('home') }}" class="text-slate-300 hover:text-white font-medium">

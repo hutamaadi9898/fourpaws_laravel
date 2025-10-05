@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\MemorialPage;
 use App\Models\MemorialTemplate;
-use Illuminate\Http\Request;
 
 class LandingController extends Controller
 {
@@ -13,7 +12,7 @@ class LandingController extends Controller
         try {
             $data = [
                 'featuredMemorials' => MemorialPage::published()
-                    ->with(['user', 'media' => fn($query) => $query->limit(1)])
+                    ->with(['user', 'media' => fn ($query) => $query->limit(1)])
                     ->latest()
                     ->limit(6)
                     ->get(),

@@ -1,10 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LandingController;
-use Livewire\Volt\Volt;
 
-Route::get('/', [LandingController::class, 'index'])->name('home');
+Route::get('/', App\Livewire\HomePage::class)->name('home');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

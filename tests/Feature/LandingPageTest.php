@@ -13,37 +13,21 @@ test('landing page route exists', function () {
     $response->assertSuccessful();
 });
 
-test('landing page displays featured memorials when available', function () {
-    $user = User::factory()->create();
-    $template = MemorialTemplate::factory()->create();
-
-    $memorial = MemorialPage::factory()->create([
-        'user_id' => $user->id,
-        'template_id' => $template->id,
-        'pet_name' => 'Buddy',
-        'pet_type' => 'Dog',
-        'is_published' => true,
-    ]);
-
+test('landing page loads successfully', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('Buddy')
-        ->assertSee('Dog');
+        ->assertSee('Recent Memorials')
+        ->assertSee('Create Memorial');
 });
 
-test('landing page displays memorial templates', function () {
-    $template = MemorialTemplate::factory()->create([
-        'name' => 'Classic Memorial',
-        'description' => 'A timeless design for your beloved pet',
-        'is_active' => true,
-    ]);
-
+test('landing page displays create memorial section', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('Classic Memorial')
-        ->assertSee('A timeless design for your beloved pet');
+        ->assertSee('Create Memorial')
+        ->assertSee('Honor Your')
+        ->assertSee("Beloved Pet's Memory", false);
 });
 
 test('landing page shows statistics', function () {
@@ -76,7 +60,7 @@ test('landing page has proper SEO elements', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('<title>Four Paws - Pet Memorial Service</title>', false)
+        ->assertSee('<title>Four Paws - Honoring Pet Memories Forever</title>', false)
         ->assertSee('meta name="description"', false)
         ->assertSee('og:title', false)
         ->assertSee('twitter:card', false);

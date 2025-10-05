@@ -10,7 +10,31 @@
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
         <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
-            <x-app-logo />
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                <svg class="w-8 h-8" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="sidebarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3B82F6" />
+                            <stop offset="100%" style="stop-color:#8B5CF6" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="32" cy="32" r="30" fill="url(#sidebarGradient)" stroke="#FFFFFF" stroke-width="2" />
+                    <path
+                        d="M20 28c0-6.627 5.373-12 12-12s12 5.373 12 12c0 4.418-2.389 8.291-5.943 10.376L32 44l-6.057-5.624C22.389 36.291 20 32.418 20 28z"
+                        fill="#FFFFFF" />
+                    <circle cx="28" cy="26" r="2" fill="url(#sidebarGradient)" />
+                    <circle cx="36" cy="26" r="2" fill="url(#sidebarGradient)" />
+                    <path d="M26 32c0 3.314 2.686 6 6 6s6-2.686 6-6" stroke="url(#sidebarGradient)" stroke-width="2"
+                        stroke-linecap="round" />
+                    <ellipse cx="24" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                    <ellipse cx="40" cy="24" rx="3" ry="2" fill="#FFFFFF" opacity="0.8" />
+                    <path d="M18 20c-2 2-2 6 0 8" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                    <path d="M46 20c2 2 2 6 0 8" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </div>
+            <span
+                class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Four
+                Paws</span>
         </a>
 
         <flux:navlist variant="outline">
@@ -76,6 +100,7 @@
                 </form>
             </flux:menu>
         </flux:dropdown>
+        @endauth
     </flux:sidebar>
 
     <!-- Mobile User Menu -->

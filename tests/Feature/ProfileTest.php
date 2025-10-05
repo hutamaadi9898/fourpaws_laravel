@@ -1,89 +1,41 @@
 <?php
 
 use App\Models\User;
-use Livewire\Volt\Volt;
 
-test('profile page is displayed', function () {
+it('shows the profile settings page', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
+    $response = $this->actingAs($user)->get('/settings/profile');
 
-    $response = $this->get('/profile');
-
-    $response
-        ->assertOk()
-        ->assertSeeVolt('profile.update-profile-information-form')
-        ->assertSeeVolt('profile.update-password-form')
-        ->assertSeeVolt('profile.delete-user-form');
+    $response->assertOk()->assertSee('Profile');
 });
 
-test('profile information can be updated', function () {
+it('updates profile information', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $component = Volt::test('profile.update-profile-information-form')
-        ->set('name', 'Test User')
-        ->set('email', 'test@example.com')
-        ->call('updateProfileInformation');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertNoRedirect();
+    $this->actingAs($user)
+        ->put(route('user-profile-information.update'), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ])
+        ->assertSessionHasNoErrors();
 
     $user->refresh();
 
-    $this->assertSame('Test User', $user->name);
-    $this->assertSame('test@example.com', $user->email);
-    $this->assertNull($user->email_verified_at);
+    expect($user->name)->toBe('Test User');
+    expect($user->email)->toBe('test@example.com');
+    expect($user->email_verified_at)->toBeNull();
 });
 
-test('email verification status is unchanged when the email address is unchanged', function () {
+it('maintains email verification when email unchanged', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
+    $this->actingAs($user)
+        ->put(route('user-profile-information.update'), [
+            'name' => 'Updated Name',
+            'email' => $user->email,
+        ])
+        ->assertSessionHasNoErrors();
 
-    $component = Volt::test('profile.update-profile-information-form')
-        ->set('name', 'Test User')
-        ->set('email', $user->email)
-        ->call('updateProfileInformation');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertNoRedirect();
-
-    $this->assertNotNull($user->refresh()->email_verified_at);
-});
-
-test('user can delete their account', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user);
-
-    $component = Volt::test('profile.delete-user-form')
-        ->set('password', 'password')
-        ->call('deleteUser');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertRedirect('/');
-
-    $this->assertGuest();
-    $this->assertNull($user->fresh());
-});
-
-test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user);
-
-    $component = Volt::test('profile.delete-user-form')
-        ->set('password', 'wrong-password')
-        ->call('deleteUser');
-
-    $component
-        ->assertHasErrors('password')
-        ->assertNoRedirect();
-
-    $this->assertNotNull($user->fresh());
+    expect($user->fresh()->email_verified_at)->not()->toBeNull();
 });

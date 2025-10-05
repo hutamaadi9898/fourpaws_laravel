@@ -2,26 +2,25 @@
 
 namespace Tests\Feature\Auth;
 
-use Livewire\Volt\Volt;
+use App\Models\User;
 
-test('registration screen can be rendered', function () {
-    $response = $this->get('/register');
+it('renders the registration screen', function () {
+    $response = $this->get(route('register'));
 
-    $response
-        ->assertOk()
-        ->assertSeeVolt('pages.auth.register');
+    $response->assertOk()->assertSee('Register');
 });
 
-test('new users can register', function () {
-    $component = Volt::test('pages.auth.register')
-        ->set('name', 'Test User')
-        ->set('email', 'test@example.com')
-        ->set('password', 'password')
-        ->set('password_confirmation', 'password');
+it('registers new users', function () {
+    $response = $this->post(route('register'), [
+        'name' => 'Jane Doe',
+        'email' => 'jane@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'terms' => true,
+    ]);
 
-    $component->call('register');
-
-    $component->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('dashboard'));
 
     $this->assertAuthenticated();
+    $this->assertDatabaseHas('users', ['email' => 'jane@example.com']);
 });

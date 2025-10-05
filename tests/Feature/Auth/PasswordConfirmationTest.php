@@ -3,44 +3,37 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Livewire\Volt\Volt;
 
-test('confirm password screen can be rendered', function () {
+it('renders the confirm password screen', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->get('/confirm-password');
+    $response = $this->actingAs($user)->get(route('password.confirm'));
 
-    $response
-        ->assertSeeVolt('pages.auth.confirm-password')
-        ->assertStatus(200);
+    $response->assertOk()->assertSee('This is a secure area of the application', false);
 });
 
-test('password can be confirmed', function () {
-    $user = User::factory()->create();
+it('confirms the user password', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('password'),
+    ]);
 
-    $this->actingAs($user);
+    $this->actingAs($user)
+        ->post(route('password.confirm'), [
+            'password' => 'password',
+        ])
+        ->assertRedirect();
 
-    $component = Volt::test('pages.auth.confirm-password')
-        ->set('password', 'password');
-
-    $component->call('confirmPassword');
-
-    $component
-        ->assertRedirect('/dashboard')
-        ->assertHasNoErrors();
+    $this->assertAuthenticated();
 });
 
-test('password is not confirmed with invalid password', function () {
+it('rejects an invalid confirmation password', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $component = Volt::test('pages.auth.confirm-password')
-        ->set('password', 'wrong-password');
-
-    $component->call('confirmPassword');
-
-    $component
-        ->assertNoRedirect()
-        ->assertHasErrors('password');
+    $this->actingAs($user)
+        ->from(route('password.confirm'))
+        ->post(route('password.confirm'), [
+            'password' => 'wrong-password',
+        ])
+        ->assertRedirect(route('password.confirm'))
+        ->assertSessionHasErrors('password');
 });

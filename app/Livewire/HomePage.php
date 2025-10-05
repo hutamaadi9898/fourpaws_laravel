@@ -9,19 +9,9 @@ use Livewire\Component;
 
 class HomePage extends Component
 {
-    public string $currentSection = 'hero';
-
-    public bool $showPricingModal = false;
-
     public function scrollToSection(string $section): void
     {
-        $this->currentSection = $section;
         $this->dispatch('scroll-to-section', section: $section);
-    }
-
-    public function togglePricingModal(): void
-    {
-        $this->showPricingModal = ! $this->showPricingModal;
     }
 
     public function render(): View

@@ -2,8 +2,8 @@
 
 use App\Models\GuestbookEntry;
 use App\Models\MemorialPage;
+use App\Models\MemorialStory;
 use App\Models\MemorialTemplate;
-use App\Models\Story;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -33,7 +33,7 @@ test('published memorial displays correctly', function () {
         ->assertSee('Dog')
         ->assertSee('A loyal companion who brought joy to our family')
         ->assertSee('Memorial created by John Doe')
-        ->assertSee('Jan 15, 2020 - Jan 15, 2024');
+        ->assertSee('Jan 15, 2020 - Jan 15, 2024', false);
 });
 
 test('unpublished memorial returns 404', function () {
@@ -101,7 +101,7 @@ test('memorial displays stories when available', function () {
         'is_published' => true,
     ]);
 
-    Story::factory()->create([
+    MemorialStory::factory()->create([
         'memorial_page_id' => $memorial->id,
         'title' => 'First Day Home',
         'content' => 'I remember the day we brought Buddy home...',
@@ -111,10 +111,10 @@ test('memorial displays stories when available', function () {
     $response = $this->get("/memorial/{$memorial->slug}");
 
     $response->assertSuccessful()
-        ->assertSee('Memories & Stories')
+        ->assertSee('Memories & Stories', false)
         ->assertSee('First Day Home')
-        ->assertSee('I remember the day we brought Buddy home...')
-        ->assertSee('— Family');
+        ->assertSeeText('I remember the day we brought Buddy home...')
+        ->assertSeeText('Family');
 });
 
 test('memorial has proper SEO meta tags', function () {

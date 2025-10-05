@@ -4,38 +4,38 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Volt\Volt;
 
-test('password can be updated', function () {
-    $user = User::factory()->create();
+it('updates passwords with valid current password', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('old-password'),
+    ]);
 
-    $this->actingAs($user);
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->put(route('user-password.update'), [
+            'current_password' => 'old-password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertSessionHasNoErrors();
 
-    $component = Volt::test('profile.update-password-form')
-        ->set('current_password', 'password')
-        ->set('password', 'new-password')
-        ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $component
-        ->assertHasNoErrors()
-        ->assertNoRedirect();
-
-    $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+    expect(Hash::check('new-password', $user->fresh()->password))->toBeTrue();
 });
 
-test('correct password must be provided to update password', function () {
-    $user = User::factory()->create();
+it('requires the correct current password', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('old-password'),
+    ]);
 
-    $this->actingAs($user);
+    $response = $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->from('/user/profile')
+        ->put(route('user-password.update'), [
+            'current_password' => 'incorrect',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
 
-    $component = Volt::test('profile.update-password-form')
-        ->set('current_password', 'wrong-password')
-        ->set('password', 'new-password')
-        ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $component
-        ->assertHasErrors(['current_password'])
-        ->assertNoRedirect();
+    $response->assertRedirect('/user/profile');
+    expect(Hash::check('old-password', $user->fresh()->password))->toBeTrue();
 });

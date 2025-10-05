@@ -17,21 +17,20 @@ test('landing page loads successfully', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('Recent Memorials')
-        ->assertSee('Create Memorial');
+        ->assertSee('Hold onto the love.', false)
+        ->assertSee('Share the story forever.', false);
 });
 
 test('landing page displays create memorial section', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('Create Memorial')
-        ->assertSee('Honor Your')
-        ->assertSee("Beloved Pet's Memory", false);
+        ->assertSee('Start a memorial', false)
+        ->assertSee('Browse memorials', false)
+        ->assertSee('Memorial gallery', false);
 });
 
 test('landing page shows statistics', function () {
-    // Create some sample data
     $user = User::factory()->create();
     $template = MemorialTemplate::factory()->create();
 
@@ -44,23 +43,23 @@ test('landing page shows statistics', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('3'); // Should show the count of memorials
+        ->assertSee(number_format(3), false);
 });
 
 test('landing page navigation works', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('Four Paws')
-        ->assertSee('Sign In')
-        ->assertSee('Get Started');
+        ->assertSee('Four Paws', false)
+        ->assertSee('Sign in', false)
+        ->assertSee('Create Memorial', false);
 });
 
 test('landing page has proper SEO elements', function () {
     $response = $this->get('/');
 
     $response->assertSuccessful()
-        ->assertSee('<title>Four Paws - Honoring Pet Memories Forever</title>', false)
+        ->assertSee('&mdash; Honoring Pet Memories Forever</title>', false)
         ->assertSee('meta name="description"', false)
         ->assertSee('og:title', false)
         ->assertSee('twitter:card', false);
